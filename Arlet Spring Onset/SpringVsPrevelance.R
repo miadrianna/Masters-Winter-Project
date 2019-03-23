@@ -117,9 +117,9 @@ legend(194.5,1, legend = c("Ao","Ao.oW","Rt","Bs"), fill = colours[1:4], cex = 1
 #This function is so that the GE for metamorphs and tadpoles is different
 prev_calc <- function(x,y,development = "Meta"){
   if(development=="Meta"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 0.05,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >0.05,])/nrow(x[x$Year == i,])))
   }else if(development=="Tad"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 10,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >10,])/nrow(x[x$Year == i,])))
   }
   df <- data.frame("Year"=unique(y$Year), "prevalence"=prev)
   return(df)
@@ -154,9 +154,9 @@ legend(153,1, legend = c("Ao","Ao.OW"), fill = colours[1:2], cex = 1.2)
 #This function is so that the GE  for metamorphs and tadpoles is different
 prev_calc <- function(x,y,development = "Meta"){
   if(development=="Meta"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 0.05,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >0.05,])/nrow(x[x$Year == i,])))
   }else if(development=="Tad"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 10,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >10,])/nrow(x[x$Year == i,])))
   }
   df <- data.frame("Year"=unique(y$Year), "prevalence"=prev)
   return(df)
@@ -186,9 +186,9 @@ legend(152.8,1, legend = c("Ao","Ao.OW"), fill = colours[1:2], cex = 1.2)
 #This function is so that the GE  for metamorphs and tadpoles is different
 prev_calc <- function(x,y,development = "Meta"){
   if(development=="Meta"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 0.05,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >0.05,])/nrow(x[x$Year == i,])))
   }else if(development=="Tad"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 10,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >10,])/nrow(x[x$Year == i,])))
   }
   df <- data.frame("Year"=unique(y$Year), "prevalence"=prev)
   return(df)
@@ -218,9 +218,9 @@ legend(173.1,1, legend = c("Ao","Ao.OW"), fill = colours[1:2], cex = 1.2)
 #This function is so that the GE  for metamorphs and tadpoles is different
 prev_calc <- function(x,y,development = "Meta"){
   if(development=="Meta"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 0.05,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >0.05,])/nrow(x[x$Year == i,])))
   }else if(development=="Tad"){
-    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >= 10,])/nrow(x[x$Year == i,])))
+    prev <- unlist(lapply(unique(y$Year), function(i) nrow(x[x$Year == i & x$GE >10,])/nrow(x[x$Year == i,])))
   }
   df <- data.frame("Year"=unique(y$Year), "prevalence"=prev)
   return(df)

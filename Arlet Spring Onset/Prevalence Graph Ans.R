@@ -4,12 +4,15 @@ colours <- c("darkgreen","gold3","darkturquoise","deeppink","firebrick4","red","
 
 #This whole code is to create graphs showing the prevalence of Bd across years for Lac Acherito 
 #This initial part is what is used i previous code to assign infection prevalence to specific dates
-data.create <- function(path){
+data.create <- function(path, development = "Meta"){
   Arlet.Meta<- read.csv(path, header = TRUE)
   
-  Meta.prev<- unlist(lapply(unique(Arlet.Meta$Year), function(x) nrow(Arlet.Meta[(Arlet.Meta$GE >= 0.05) & (Arlet.Meta$Year == x),])/nrow(Arlet.Meta[Arlet.Meta$Year == x,])))
-  Meta.prev                                                                             
-  
+  if(development == "Meta") {
+    Meta.prev<- unlist(lapply(unique(Arlet.Meta$Year), function(x) nrow(Arlet.Meta[(Arlet.Meta$GE >0.05) & (Arlet.Meta$Year == x),])/nrow(Arlet.Meta[Arlet.Meta$Year == x,])))
+    Meta.prev                                                                             
+  } else if (development == "Tad") {
+    Meta.prev<- unlist(lapply(unique(Arlet.Meta$Year), function(x) nrow(Arlet.Meta[(Arlet.Meta$GE >10) & (Arlet.Meta$Year == x),])/nrow(Arlet.Meta[Arlet.Meta$Year == x,])))
+  }
   names(Meta.prev) <- unique(Arlet.Meta$Year)
   Meta.prev<- Meta.prev[c("2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016")]
   Meta.prev
@@ -21,10 +24,9 @@ path = c("Ans.Ao.Meta.csv", "../Ao OW Data/Ans.Ao.OWL.csv")
 #The function below is taking these csv files and is calculating the proportion of infected individuals for each year 
 data <- as.data.frame(matrix(ncol = 4,nrow = 9))
 counter <- 1
-for(i in path){
-  data[,counter] <- data.create(i)
-  counter = counter + 1
-}
+data[,1]<- data.create(path = "Ans.Ao.Meta.csv")
+data[,2]<- data.create(path = "../Ao OW Data/Ans.Ao.OWL.csv", development = "Tad")
+
 #This is creating a line graph showing the prevalence of Bd
 #svg("Ans.Ao.OW.Meta.svg", width=9,height=6) 
 colnames(data) <- c("Ao","Ao.OW")

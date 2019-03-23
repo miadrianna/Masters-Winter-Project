@@ -1,0 +1,77 @@
+Arlet.Meta<- read.csv("Arl.Rt.Meta.csv", header = TRUE)
+Date<- read.csv("Arl.Dates.csv",header=TRUE, row.names=1)
+Date
+
+Meta.prev<- unlist(lapply(unique(Arlet.Meta$Year), function(x) nrow(Arlet.Meta[(Arlet.Meta$GE > 0.05) & (Arlet.Meta$Year == x),])/nrow(Arlet.Meta[Arlet.Meta$Year == x,])))
+Meta.prev                                                                             
+
+names(Meta.prev) <- unique(Arlet.Meta$Year)
+Meta.prev<- Meta.prev[c("2008", "2009", "2010", "2011", "2012", "2013","2014", "2016", "2017", "2018")]
+Meta.prev
+
+Arl.date<- Date[c("2008", "2009", "2010", "2011", "2012", "2013","2014", "2016", "2017", "2018"), , drop= TRUE ]
+Arl.date
+names(Arl.date)<- c("2008", "2009", "2010", "2011", "2012", "2013","2014", "2016", "2017", "2018")
+Arl.date
+
+plot(Arl.date, Meta.prev, pch=20, cex=3)
+tmp.lm <- lm(Arl.date~Meta.prev)
+summary(tmp.lm)
+
+cor.test(Arl.date, Meta.prev, method="spearman")
+
+Pos<- 1*(Arlet.Meta$GE>0.05)
+Pos
+
+Meta<- unlist(lapply(Arlet.Meta$Year, function(x) Arl.date[names(Arl.date) == x, drop = TRUE]))
+Meta
+
+Meta.glm<- glm(Pos~Meta, family = "binomial")
+summary(Meta.glm)
+
+(Meta.glm$null.deviance - Meta.glm$deviance) / Meta.glm$null.deviance
+1-pchisq(Meta.glm$deviance, Meta.glm$df.residual)
+
+Meta.glm$deviance/Meta.glm$df.residual
+
+Rsq.glm <- function(x){Rsq <- 1-((x$deviance/x$df.residual) /(x$null.deviance/x$df.null)); names(Rsq)<-"Generalised adjusted R squared";  return(Rsq)}
+Rsq.glm(Meta.glm)
+Meta.glm
+
+############################################################################################################################################################################################
+sunflowerplot(Pos~Meta, seg.col= "blue", xlab = "Spring onset", ylab = "Prevalence of BD", main="Infection as a function of early spring onset")
+temp <- xyTable(Pos~Meta)
+symbols(temp$x, temp$y, bg=transp("blue"), circ=.4*sqrt(temp$number), inches=FALSE,xlab = "Spring Onset", ylab = "Prevalence of BD", main="Infection as a function of early spring onset")
+
+predict(Meta.glm, newdata=data.frame(Meta=c(120,150,180)), type="response")
+
+## get coordinates for bubbles/line
+pred.x <- data.frame(Meta=1:365)
+class(pred.x)
+pred.y <- predict(Meta.glm, newdata=pred.x, type="response")
+class(pred.y)
+temp <- xyTable(Pos~Meta)
+temp
+
+## get colors for the bubbles
+toto <- Date
+toto
+
+pal <- colorRampPalette(c("blue","gold","red"))
+pal
+rownames(toto) <-pal(11)  
+bubcol <- rownames(toto)[match(temp$x, toto[,1])]
+
+## make figure for paper. using svg file as better quality
+svg("Arl.Rt.Spring.svg", width=9,height=6)  
+
+symbols(temp$x, temp$y, bg=transp(bubcol), circ=.4*sqrt(temp$number), inches=FALSE,xlab="Spring onset", ylab="Presence of Bd",xlim=c(120,180))
+text(temp$x, temp$y, label=temp$number) # annotated the circles
+
+abline(h=0:1, col=transp("grey"))
+
+lines(pred.x$Meta, pred.y, lwd=2)
+## add legend
+legend("topright", fill=transp(pal(6)), legend= c("2008", "2009", "2010", "2011", "2012", "2013","2014", "2016", "2017", "2018"), title="Year")
+dev.off()
+

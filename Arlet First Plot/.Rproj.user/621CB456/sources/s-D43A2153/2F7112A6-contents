@@ -1,0 +1,81 @@
+
+library(dplyr)
+Arl15_16<- read.csv("Arlet_15_16.csv")
+library(lubridate)
+Dates <- format(as.POSIXct(strptime(Arl15_16$Date_Time,"%m/%d/%Y %H:%M",tz="")) ,format = "%m/%d/%Y")
+Arl15_16$Dates <- Dates
+Arl15_16<- select(Arl15_16, Dates, Temp)
+write.csv(Arl15_16, file = "Arl2_15_16.csv")
+
+
+Arl16_17<- read.csv("Arlet_16_17.csv")
+Dates <- format(as.POSIXct(strptime(Arl16_17$Date_Time,"%m/%d/%Y %H:%M",tz="")) ,format = "%m/%d/%Y")
+Arl16_17$Dates<- Dates
+Arl16_17<- select(Arl16_17, Dates, Temp)
+write.csv(Arl16_17, file ="Arl2_16_17.csv")
+
+Arl17_18<- read.csv("Arlet_17-18.csv")
+Dates <- format(as.POSIXct(strptime(Arl17_18$Date_Time,"%m/%d/%Y %H:%M",tz="")) ,format = "%m/%d/%Y")
+Arl17_18$Dates<- Dates
+Arl17_18<- select(Arl17_18, Dates, Temp)
+write.csv(Arl17_18, file = "Arl2_17_18.csv")
+########################################################################################################################################################################
+#These are all our cleaned up data files so now we can start to plot them on a graph
+
+Arl2_07_15<- read.csv("Arlet_07_15.csv", stringsAsFactors = FALSE)
+Arl2_07_15<- select(Arl2_07_15, Date, Temp)
+Arl2_15_16<- read.csv("Arl2_15_16.csv", stringsAsFactors = FALSE)
+Arl2_16_17<- read.csv("Arl2_16_17.csv", stringsAsFactors = FALSE)
+Arl2_17_18<- read.csv("Arl2_17_18.csv", stringsAsFactors = FALSE) 
+
+#First it is easier to work with one dataset rather than multiple so we are ging to combine all the datasets together 
+Arl2_07_15<- Arl2_07_15[!is.na(Arl2_07_15$Temp),]
+
+Combined_Data <- Arl2_15_16[!is.na(Arl2_15_16$Temp),] %>% select(., Date, Temp) %>% rbind(.,Arl2_07_15)
+Combined_Data <- Arl2_16_17[!is.na(Arl2_16_17$Temp),] %>% select(., Date, Temp) %>% rbind(.,Combined_Data)
+Combined_Data<- Arl2_17_18[!is.na(Arl2_17_18$Temp), ] %>% select(., Date, Temp) %>%rbind(., Combined_Data)
+
+#Now we are going to get our unique dates and then get the average temperatures and variance of the days so that we have one record per day 
+UniD<- unique(Combined_Data$Date)
+Temp<- lapply(UniD, function(x) mean(filter(Combined_Data, Date == x) %>% select(Temp) %>% unlist()))
+Var<- lapply(UniD, function(x) var(filter(Combined_Data, Date == x) %>% select(Temp) %>% unlist()))
+Temp_df<- data.frame("Date" = UniD, "Avg_Temp"= unlist(Temp), "Variance" = unlist(Var))
+
+#Because its easier to read on a graph we are going to take the monthly temperature averages
+Temp_df$Date = dmy(Temp_df$Date)
+df<- Temp_df %>% group_by(Year=year(Date), Month=month(Date)) %>% summarise(mean=mean(Avg_Temp))
+#########################################################################################################################################################################################
+#Is there a warming trend
+
+AVG<- read.csv("Arlet_Yearly_AVg.csv", header = TRUE)
+
+
+mod<- lm(AVG$Mean.Temp~AVG$Year)
+
+summary(mod)
+plot(AVG$Mean.Temp~AVG$Year, pch= 19, xlab = "Years", ylab = "Mean Temperature", col = "blue")
+abline(mod, col = "red")
+
+
+
+#####################################################################################################################################################################################
+#Now we are going to start plotting the graph
+svg("Arl.Temp.svg", width=15,height=9)
+correct_order <- data.frame("month"=c(1,2,3,4,5,6,7,8,9,10,11,12),"values"=NA)
+Col2<- data.frame("colour"= as.character(rainbow(12)), "Year" = c("2007","2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018"))
+Year_<- df[grep("2008", df$Year), ]
+plot(1: nrow(Year_), Year_$mean, type = "o", col= Col2[Col2$Year == "2008", 1], cex = 0.1, xaxt= "n", ylab = "Monthly Average Temperature", xlab = "Month")
+for(x in c("2007","2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017","2018")){
+  Year_ <- df[grep(x, df$Year),]
+  tmp <- correct_order
+  for(t in tmp$month){
+    if(any(grepl(paste0("\\b",t,"\\b"), Year_$Month))){
+      tmp[tmp$month == t,"values"] <- Year_[grep(paste0("\\b",t,"\\b"), Year_$Month), "mean"]
+    }
+  }
+  lines(tmp$values, type = "o", col = Col2[Col2$Year == x,1], cex = 0.4)
+}
+legend(x = 1, y = 18,legend = Col2$Year, col = Col2$colour, lty=1:12, cex=0.9)
+axis(side=1, at=(seq(1,12,1)), labels=month.name)
+
+dev.off()

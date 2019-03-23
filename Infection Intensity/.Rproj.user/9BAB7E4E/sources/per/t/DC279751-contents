@@ -1,0 +1,77 @@
+
+#This is the colour palette used across all graphics and will be used in the boxplots 
+colours <- c("darkgreen","gold3","darkturquoise","deeppink","firebrick4","red","snow4","royalblue4", "orangered2","khaki3", "lightgoldenrod3","navy","slategray2")
+
+#These files are all svg images and are boxplots of the distribution of infection intensity in tadpoles and metamorphs for each lake 
+svg("Arl.MetaVsTad.svg", width=9,height=5) 
+Combine<- read.csv("Arl.Ao.Meta.Ow.csv", header = TRUE)
+par(xpd=TRUE,mar=c(5.3,4.4,2.8,6.7),mfrow=c(2,2))
+boxplot(log(GE + 1)~Developmental.stage*Year, xlab = "Year", ylab = "Log GE", data = Combine, col= colours[1:2], las = 2,at =c(1,2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26,28,29,31,32),names = c("2008","","2009","","2010","","2011","","2012","","2013","","2014","","2015","","2016","","2017","","2018",""))
+axis(side=1, at=c(1,4,7,8,10,11,13,14,16,17,19,20,22,23,25,26,28,29,31,32), labels = FALSE)
+legend(35,10, legend = c("M","T"), fill = colours[1:2], cex = 1.2)
+text(1,13.7,"(a)",cex=1.2)
+
+#svg("Ach.MetaVsTad.svg", width=9,height=5) 
+Combine<- read.csv("Ach.Ao.Meta.OW.csv", header = TRUE)
+boxplot(log(GE + 1)~Developmental.stage*Year, xlab = "Year", ylab = "Log GE", data = Combine, col= colours[1:2], las = 2,at =c(1,2, 4,5, 7,8, 10,11, 13,14, 16,17, 19,20, 22,23, 25,26, 28,29),names = c("2008","","2009","","2010","","2011","","2012","","2014","","2015","","2016","","2017","","2018",""))
+axis(side=1, at=c(1,4,7,8,10,11,13,14,16,17,19,20,22,23,25,26,28,29), labels = FALSE)
+legend(32,10, legend = c("M","T"), fill = colours[1:2], cex = 1.2)
+text(1,13.3,"(b)",cex=1.2)
+#dev.off()
+
+#svg("Ans.MetaVsTad.svg", width=9,height=5) 
+Combine<- read.csv("Ans.Ao.Meta.OW.csv", header = TRUE)
+boxplot(log(GE + 1)~Developmental.stage*Year, xlab = "Year", ylab = "Log GE", data = Combine, col= colours[1:2], las = 2,at =c(1,2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26),names = c("2008","","2009","","2010","","2011","","2012","","2014","","2015","","2016","","2017",""))
+axis(side=1, at=c(1,4,7,8,10,11,13,14,16,17,19,20,22,23,25,26), labels = FALSE)
+legend(28.5,8, legend = c("M","T"), fill = colours[1:2], cex = 1.2)
+text(1,10.6,"(c)",cex=1.2)
+#dev.off()
+
+#svg("Pui.MetaVsTad.svg", width=9,height=5) 
+Combine<- read.csv("Pui.Ao.Meta.OW.csv", header = TRUE)
+boxplot(log(GE + 1)~Developmental.stage*Year, xlab = "Year", ylab = "Log GE", data = Combine, col= colours[1:2], las = 2,at =c(1,2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26),names = c("2008","","2009","","2010","","2011","","2014","","2015","","2016","","2017","","2018",""))
+axis(side=1, at=c(1,4,7,8,10,11,13,14,16,17,19,20,22,23,25,26), labels = FALSE)
+legend(28.5,8, legend = c("M","T"), fill = colours[1:2], cex = 1.2)
+text(1,12,"(d)",cex=1.2)
+dev.off()
+
+###################################################################################################################################################
+library(lme4)
+library(lmtest)
+
+#This contains all infection data for A.obsetricians for all lakes across all years available 
+All<- read.csv("All.Ao.Meta.OW.csv", header = TRUE)
+
+#This is the liner mixed model with one fixed effect and two random effects 
+M1<- lmer(log(All$GE+1)~All$Developmental.stage + (1|All$Year)+ (1|All$Lake))
+summary(M1)
+
+#This is the linear mixed model with one fixed effect and one random effect
+M2<- lmer(log(All$GE+1)~All$Developmental.stage + (1|All$Year))
+summary(M2)
+
+#This is the linear mixed model within one fixed effect and one random effect 
+M3<- lmer(log(All$GE+1)~All$Developmental.stage + (1|All$Lake))
+summary(M3)
+
+#This is the linear mixed model with one fixed effect 
+M4<- lmer(log(All$GE+1)~(1|All$Developmental.stage))
+summary(M4)
+
+#This is the null model 
+M5<- lmer(All$GE~1+(1|All$Lake)+(1|All$Year))
+summary(M5)
+
+#This is a liklihood ratio test to test all the models 
+lrtest(M1,M2) 
+lrtest(M1,M3) 
+lrtest(M1,M4) 
+lrtest(M1,M5)
+
+#Calculates how much variance is caused by year
+1.04/(1.04+5.25)
+
+#Calculates how much variance is caused by lake
+0.79/(0.79+5.25)
+
+

@@ -1,0 +1,11 @@
+#Here I just read in all the different climatic parameters
+Date<- read.csv("Arl.Dates.csv", header = TRUE)
+Date
+
+#Created a dataframe
+data<- Date[ , c(2,3,4,5,6)]
+head(data, 6)
+
+#Used the default cor test
+Core<- cor(data)
+Core

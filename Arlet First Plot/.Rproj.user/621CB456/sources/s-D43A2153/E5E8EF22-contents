@@ -1,0 +1,118 @@
+Arl_08_<- read.csv("Arlet_08_.csv")
+#09 has an incomplete dataset
+Arl_09_<- read.csv("Arlet_09_.csv")
+#10 has an incomplete dataset 
+Arl_10_<- read.csv("Arlet_10_.csv")
+Arl_11_<- read.csv("Arlet_11_.csv")
+Arl_12_<- read.csv("Arlet_12_.csv")
+Arl_13_<- read.csv("Arlet_13_.csv")
+Arl_14_<- read.csv("Arlet_14_.csv")
+Arl_15_<- read.csv("Arlet_15_.csv")
+Arl_16_<- read.csv("Arlet_16_.csv")
+Arl_17_<- read.csv("Arlet_17_.csv")
+Arl_18_<- read.csv("Arlet_18_.csv")
+
+Arl_08_<- Arl_08_[!is.na(Arl_08_$Temp),]
+Arl_09_<- Arl_09_[!is.na(Arl_09_$Temp), ]
+Arl_10_<- Arl_10_[!is.na(Arl_10_$Temp), ]
+Arl_11_<- Arl_11_[!is.na(Arl_11_$Temp), ]
+Arl_12_<- Arl_12_[!is.na(Arl_12_$Temp), ]
+Arl_13_<- Arl_13_[!is.na(Arl_13_$Temp), ]
+Arl_14_<- Arl_14_[!is.na(Arl_14_$Temp), ]
+Arl_15_<- Arl_15_[!is.na(Arl_15_$Temp), ]
+Arl_16_<- Arl_16_[!is.na(Arl_16_$Temp), ]
+Arl_17_<- Arl_17_[!is.na(Arl_17_$Temp), ]
+Arl_18_<- Arl_18_[!is.na(Arl_18_$Temp), ]
+
+
+
+cv<- function(x) {cv<- sd(x) / mean(x); names(cv)<- "Coefficient of Variance"; return(cv)}
+cv(Arl_08_$Temp)
+
+###############################################################################################################################################################
+#This is where we are trying to find out the coefficient of variation
+
+cv(Arl_08_$Temp)
+cv(Arl_11_$Temp)
+cv(Arl_12_$Temp)
+cv(Arl_09_$Temp)
+cv(Arl_10_$Temp)
+cv(Arl_11_$Temp)
+cv(Arl_12_$Temp)
+cv(Arl_13_$Temp)
+cv(Arl_14_$Temp)
+cv(Arl_15_$Temp)
+cv(Arl_16_$Temp)
+cv(Arl_17_$Temp)
+cv(Arl_18_$Temp)
+
+Ao.cv<- read.csv("Arlet_CV.csv",header=TRUE, row.names=1)
+Ao<- read.csv("ARL.inf.M.csv", header=TRUE)
+
+#Here we are going through all the dates and seeing how much Bd is present at eah year
+Ao.inf <- unlist(lapply(unique(Ao$Year), function(x) nrow(Ao[(Ao$GE > 0.05) & (Ao$Year == x),])/nrow(Ao[Ao$Year == x,])))
+Ao.inf
+
+#Then we assign these dates to the proportions of Bd in each year 
+names(Ao.inf) <- unique(Ao$Year)
+Ao.inf <- Ao.inf[c("2008","2009","2010","2011","2012","2013", "2014", "2015", "2016", "2017", "2018")]
+Ao.inf
+
+#Here The coefficient of variance is being assigned the relevant date 
+Ao.d<- Ao.cv[c("2008","2009","2010","2011","2012","2013", "2014", "2015", "2016", "2017", "2018"), ,drop=TRUE]
+Ao.d
+names(Ao.d) <- c("2008","2009","2010","2011","2012","2013", "2014", "2015", "2016", "2017", "2018")
+Ao.d
+
+plot(Ao.d, Ao.inf, pch=20, cex=3)
+#Here we are making the infection data binary so 1 for present 0 for not present 
+Ao.o <- 1*(Ao$GE > 0.05)
+Ao.o
+
+#This sorts out the dimension problem by making sure all the dates have a CV
+Ao.c <- unlist(lapply(Ao$Year, function(x) Ao.d[names(Ao.d) == x, drop=TRUE]))
+Ao.c
+
+Ao.glm <- glm( Ao.o ~ Ao.c, family="binomial")
+summary(Ao.glm)
+Rsq.glm <- function(x){Rsq <- 1-((x$deviance/x$df.residual) /(x$null.deviance/x$df.null)); names(Rsq)<-"Generalised adjusted R squared";  return(Rsq)}
+Rsq.glm(Ao.glm)
+Ao.glm
+
+###################################################################################################################################################################
+sunflowerplot(Ao.o~Ao.c, seg.col= "blue", xlab = "Coefficient of Variance (Yearly Temperature", ylab = "Prevalence of BD", main="Infection as a function of temperature variance throughout the year")
+temp <- xyTable(Ao.o~Ao.c)
+symbols(temp$x, temp$y, bg=transp("blue"), circ=.7*sqrt(temp$number), inches=FALSE,xlab = "Coefficient of Variance (Yearly Temperature)", ylab = "Prevalence of BD", main="Infection as a function of temperature variance throughout the year")
+
+predict(Ao.glm, newdata=data.frame(Ao.c=c(50,150,300)), type="response")
+
+## get coordinates for bubbles/line
+pred.x <- data.frame(Ao.c=1:365)
+class(pred.x)
+pred.y <- predict(Ao.glm, newdata=pred.x, type="response")
+class(pred.y)
+temp <- xyTable(Ao.o~Ao.c)
+temp
+
+## get colors for the bubbles
+toto <- Ao.cv
+toto
+
+pal <- colorRampPalette(c("blue","gold","red"))
+pal
+rownames(toto) <-pal(11)  
+bubcol <- rownames(toto)[match(round(temp$x,1), round(toto$CV,1))]
+bubcol
+## make figure for paper. using svg file as better quality
+svg("ARL.Prev.Var.svg", width=9,height=6)  
+
+symbols(temp$x, temp$y, bg=transp(bubcol), circ=.7*sqrt(temp$number), inches=FALSE,xlab="Coefficient of Variance (Yearly Temperature)", ylab="Presence of Bd",xlim=c(50,300))
+text(temp$x, temp$y, label=temp$number) # annotated the circles
+
+abline(h=0:1, col=transp("grey"))
+
+lines(pred.x$Ao.c, pred.y, lwd=2)
+## add legend
+legend("topright", fill=transp(pal(11)), legend=2008:2018, title="Year")
+dev.off()
+
